@@ -202,7 +202,7 @@ class FaaraoEngine {
         }
 
         // --- フェーズ 2: パーツ配列を「母音単体防止ルール」を適用しながらブロック化する ---
-        const vowels = ["A", "I", "U", "E", "O","K"];
+        const vowels = ["A", "I", "U", "E", "O"];
         let result = [];
         let currentBlock = [];
 
