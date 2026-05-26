@@ -807,38 +807,43 @@ document.getElementById('btn-generate').addEventListener('click', async () => {
   let codepoint = 0xE000;
   let doneCount = 0;
 
-  const BATCH = 20; // 一度に処理するバッチ数
+  const CONCURRENCY = 64; // 同時並列数
 
-  for (let i = 0; i < combos.length; i += BATCH) {
-    const batch = combos.slice(i, Math.min(i + BATCH, combos.length));
+  // コンボを CONCURRENCY ずつのチャンクに分割して並列処理
+  for (let i = 0; i < combos.length; i += CONCURRENCY) {
+    const chunk = combos.slice(i, Math.min(i + CONCURRENCY, combos.length));
 
-    for (const block of batch) {
+    const results = await Promise.all(chunk.map(async (block) => {
       try {
         const canvas = await renderBlockToCanvas(block, cellSize);
-        const glyphWidth = em; // 正方形グリフ
         const path = canvasToOpentypePath(canvas, em, ascender, 0);
-
-        const name = block.join('_');
-        generatedGlyphs.push({
-          name,
-          codepoint,
-          block,
-          canvas, // プレビュー用に保持
-          path,
-          advanceWidth: glyphWidth
-        });
-
-        codepoint++;
-        doneCount++;
-        document.getElementById('stat-generated').textContent = doneCount;
-        setProgress((doneCount / total) * 100);
-
-        if (doneCount % 200 === 0) {
-          log(`  → ${doneCount}/${total} 完了`, 'ok');
-        }
+        return { ok: true, block, canvas, path };
       } catch (e) {
-        log(`  ✗ ${block.join('+')} エラー: ${e.message}`, 'err');
+        return { ok: false, block, error: e.message };
       }
+    }));
+
+    for (const r of results) {
+      if (r.ok) {
+        generatedGlyphs.push({
+          name: r.block.join('_'),
+          codepoint,
+          block: r.block,
+          canvas: r.canvas,
+          path: r.path,
+          advanceWidth: em
+        });
+        codepoint++;
+      } else {
+        log(`  ✗ ${r.block.join('+')} エラー: ${r.error}`, 'err');
+      }
+      doneCount++;
+      document.getElementById('stat-generated').textContent = doneCount;
+      setProgress((doneCount / total) * 100);
+    }
+
+    if (Math.floor(i / CONCURRENCY) % 10 === 0) {
+      log(`  → ${doneCount}/${total} 完了`, 'ok');
     }
 
     // UIブロッキング回避
