@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faairao Tester</title>
+
+<!-- OGP Tags -->
+<meta property="og:title" content="Faairao Tester">
+<meta property="og:description" content="Faairao Engine Testing and Rendering Tool">
+<meta property="og:type" content="website">
+
+<script src="./index.js" defer></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+JP:wght@400;500&display=swap');
+
+  :root {
+    --bg:       #f5f4f0;
+    --surface:  #ffffff;
+    --surface2: #eeede8;
+    --border:   #d8d6ce;
+    --accent:   #4a3fd4;
+    --accent2:  #c93060;
+    --text:     #1a1a2e;
+    --muted:    #7a7870;
+    --success:  #1a7a4a;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Noto Sans JP', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  /* ─── Header ─── */
+  header {
+    padding: 1.4rem 2rem;
+    background: var(--surface);
+    border-bottom: 2px solid var(--text);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  header h1 {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+  }
+  header .tag {
+    font-family: var(--mono);
+    font-size: .65rem;
+    padding: .2em .6em;
+    background: var(--text);
+    color: var(--surface);
+    border-radius: 2px;
+    letter-spacing: .1em;
+  }
+  header .src {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: .68rem;
+    color: var(--muted);
+  }
+  header .src a { color: var(--accent); }
+
+  /* ─── Main ─── */
+  main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  @media (max-width: 680px) {
+    main { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    padding: 1.8rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .panel:first-child {
+    border-right: 1px solid var(--border);
+  }
+
+  .panel-label {
+    font-family: var(--mono);
+    font-size: .65rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: .4rem;
+  }
+
+  /* ─── Input ─── */
+  textarea {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: .95rem;
+    padding: .9rem 1rem;
+    resize: vertical;
+    min-height: 110px;
+    width: 100%;
+    outline: none;
+    transition: border-color .15s;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--border); }
+
+  /* ─── Presets ─── */
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+  }
+  .preset-btn {
+    font-family: var(--mono);
+    font-size: .7rem;
+    padding: .3em .75em;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color .12s, color .12s, background .12s;
+  }
+  .preset-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: #f0eeff;
+  }
+
+  /* ─── Render Button ─── */
+  .render-btn {
+    font-family: var(--mono);
+    font-size: .82rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    padding: .65em 1.5em;
+    background: var(--text);
+    color: var(--surface);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: background .15s, transform .1s;
+  }
+  .render-btn:hover { background: var(--accent); }
+  .render-btn:active { transform: scale(.97); }
+
+  /* ─── Parse Dump ─── */
+  .dump {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    padding: .8rem 1rem;
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: var(--success);
+    white-space: pre-wrap;
+    word-break: break-all;
+    min-height: 56px;
+    max-height: 160px;
+    overflow-y: auto;
+    line-height: 1.6;
+  }
+
+  /* ─── Output ─── */
+  #faairao-output {
+    min-height: 140px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    padding: 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    align-items: flex-start;
+    align-content: flex-start;
+    position: relative;
+  }
+  #faairao-output.empty::after {
+    content: 'ここにレンダリング結果が表示されます';
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: var(--border);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+  }
+
+  /* ─── Faairao block ───────────────────────────────────────
+     2×2グリッド配置
+       pos-A = 左上  pos-D = 右上
+                     pos-S = 右下
+     diaeresis は各セル内に absolute で重ねる。
+     gridセル自体を position:relative にするため
+     img を .cell div でラップする構造を前提とするが、
+     faairao.js は img を直接 blockDiv に入れるため、
+     ここでは grid-area 指定 + diaeresis を同セルに
+     重ねるために親を relative にして対応する。
+     ─────────────────────────────────────────────────────── */
+  .faarao-block {
+    position: relative;
+    display: inline-grid;
+    grid-template-columns: 60px 60px;
+    grid-template-rows: 60px 60px;
+    width: 120px;
+    height: 120px;
+    vertical-align: top;
+    flex-shrink: 0;
+  }
+  /* 通常パーツ画像 */
+  .faarao-block img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    display: block;
+  }
+  .faarao-block img.pos-A { grid-column: 1; grid-row: 1; }
+  .faarao-block img.pos-D { grid-column: 2; grid-row: 1; }
+  .faarao-block img.pos-S { grid-column: 2; grid-row: 2; }
+
+  /* diaeresis: grid に参加させず absolute で対応セルに重ねる */
+  .faarao-block img.diaeresis {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    pointer-events: none;
+    grid-column: unset;
+    grid-row: unset;
+  }
+  .faarao-block img.pos-A.diaeresis { top: 0px;  left: 0px;  }
+  .faarao-block img.pos-D.diaeresis { top: 0px;  left: 60px; }
+  .faarao-block img.pos-S.diaeresis { top: 60px; left: 60px; }
+
+  /* ─── Debug Panel ─── */
+  .debug-section {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border);
+    padding: 1.4rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: .8rem;
+  }
+  .debug-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: .6rem;
+  }
+  .debug-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: .7rem .9rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    line-height: 1.7;
+  }
+  .debug-card .card-title {
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: .3rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: .3rem;
+  }
+  .debug-card .ok    { color: var(--success); }
+  .debug-card .warn { color: #b06000; }
+  .debug-card .err  { color: var(--accent2); }
+
+  /* ─── Error ─── */
+  .error-banner {
+    display: none;
+    background: #fff0f3;
+    border: 1.5px solid var(--accent2);
+    border-radius: 4px;
+    padding: .65rem 1rem;
+    font-family: var(--mono);
+    font-size: .72rem;
+    color: var(--accent2);
+  }
+  .error-banner.visible { display: block; }
+
+  /* ─── Footer ─── */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: .8rem 2rem;
+    font-family: var(--mono);
+    font-size: .65rem;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #engine-status.ok  { color: var(--success); }
+  #engine-status.err { color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Faairao</h1>
+  <span class="tag">TESTER</span>
+  <span class="src">
+    <a href="https://ec2045.github.io/Faairao/index.js" target="_blank">ec2045.github.io/Faairao/index.js</a>
+  </span>
+</header>
+
+<main>
+  <!-- 左: 入力 -->
+  <div class="panel">
+    <div class="panel-label">Input</div>
+
+    <textarea id="input-text" placeholder="例: SHUNYU / RITSUTO AGA ..." oninput="doRender()"></textarea>
+
+    <div>
+      <div class="panel-label" style="margin-bottom:.6rem">Presets</div>
+      <div class="presets">
+        <button class="preset-btn" data-text="SHUNYU">SHUNYU</button>
+        <button class="preset-btn" data-text="RITSUTO AGA">RITSUTO AGA</button>
+      </div>
+    </div>
+
+    <button class="render-btn" id="render-btn">▶ Render</button>
+
+    <div class="error-banner" id="error-banner"></div>
+
+    <div>
+      <div class="panel-label" style="margin-bottom:.5rem">parseText() output</div>
+      <div class="dump" id="parse-dump">—</div>
+    </div>
+  </div>
+
+  <!-- 右: 出力 -->
+  <div class="panel">
+    <div class="panel-label">Rendered Output</div>
+    <div id="faairao-output" class="empty"></div>
+
+    <div>
+      <div class="panel-label" style="margin-bottom:.5rem">DOM Snapshot</div>
+      <div class="dump" id="dom-dump">—</div>
+    </div>
+  </div>
+  <!-- デバッグパネル -->
+  <div class="debug-section">
+    <div class="panel-label">🔬 Debug — Block Inspector</div>
+    <div class="debug-grid" id="debug-grid">
+      <div class="debug-card" style="color:var(--muted)">レンダリング後に各ブロックの詳細がここに表示されます</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span id="engine-status">checking engine...</span>
+  <span id="block-count">blocks: —</span>
+</footer>
+
+<script>
+// faairao.js が公開する FaaraoEngine を使ってテスト UI を初期化する
+window.addEventListener('load', () => {
+  const inputEl   = document.getElementById('input-text');
+  const renderBtn = document.getElementById('render-btn');
+  const outputEl  = document.getElementById('faairao-output');
+  const parseDump = document.getElementById('parse-dump');
+  const domDump   = document.getElementById('dom-dump');
+  const errBanner = document.getElementById('error-banner');
+  const statusEl  = document.getElementById('engine-status');
+  const countEl   = document.getElementById('block-count');
+
+  if (typeof FaaraoEngine === 'undefined') {
+    statusEl.textContent = '✕ FaaraoEngine not found (faairao.js 読み込み失敗?)';
+    statusEl.className = 'err';
+    return;
+  }
+  const engine = new FaaraoEngine();
+  statusEl.textContent = '● FaaraoEngine (faairao.js)';
+  statusEl.className = 'ok';
+
+  const doRender = () => {
+    const text = inputEl.value.trim();
+    errBanner.className = 'error-banner';
+
+    if (!text) {
+      outputEl.innerHTML = '';
+      outputEl.className = 'empty';
+      parseDump.textContent = '—';
+      domDump.textContent = '—';
+      countEl.textContent = 'blocks: 0';
+      return;
+    }
+
+    try {
+      engine.render(text, 'faairao-output');
+      const parsed = engine.parseText(text);
+      parseDump.textContent = JSON.stringify(parsed, null, 2);
+      countEl.textContent = `blocks: ${parsed.length}`;
+
+      setTimeout(() => {
+        const blocks = outputEl.querySelectorAll('.faarao-block');
+        outputEl.classList.toggle('empty', blocks.length === 0);
+        countEl.textContent = `blocks: ${blocks.length}`;
+
+        let snap = '';
+        blocks.forEach((b, i) => {
+          const parts = [...b.querySelectorAll('img:not(.diaeresis)')].map(img =>
+            img.src.split('/').pop().replace('.svg', '')
+          );
+          snap += `block[${i}]: [${parts.join(', ')}]\n`;
+        });
+        domDump.textContent = snap.trim() || '(no blocks)';
+
+        const debugGrid = document.getElementById('debug-grid');
+        debugGrid.innerHTML = '';
+        if (blocks.length === 0) {
+          debugGrid.innerHTML = '<div class="debug-card" style="color:var(--muted)">blocks: 0</div>';
+          return;
+        }
+        blocks.forEach((b, i) => {
+          const allImgs = [...b.querySelectorAll('img')];
+          const card = document.createElement('div');
+          card.className = 'debug-card';
+          const rows = allImgs.map(img => {
+            const name   = img.src.split('/').pop();
+            const cls    = img.className;
+            const isDia  = img.classList.contains('diaeresis');
+            const loaded = img.complete && img.naturalWidth > 0;
+            const status = loaded ? '<span class="ok">✓</span>' : '<span class="err">✗ 404?</span>';
+            const tag    = isDia ? '<span class="warn">[¨]</span>' : '<span class="ok">[img]</span>';
+            return `${tag} ${status} <b>${name}</b> <span style="color:var(--muted)">.${cls.split(' ').join('.')}</span>`;
+          });
+          card.innerHTML = `
+            <div class="card-title">block[${i}]
+              <span style="color:var(--muted);font-weight:400"> .${b.className.split(' ').join('.')}</span>
+            </div>
+            ${rows.join('<br>')}
+            <div style="margin-top:.4rem;color:var(--muted)">img total: ${allImgs.length}</div>
+          `;
+          debugGrid.appendChild(card);
+        });
+      }, 300);
+
+    } catch(e) {
+      errBanner.textContent = '⚠ ' + e.message;
+      errBanner.className = 'error-banner visible';
+    }
+  };
+
+  // HTMLの oninput 属性から実行できるようにグローバルスコープへ公開
+  window.doRender = doRender;
+
+  renderBtn.addEventListener('click', doRender);
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) doRender();
+  });
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      inputEl.value = btn.dataset.text;
+      doRender();
+    });
+  });
+});
+</script>
+</body>
+</html>
