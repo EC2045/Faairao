@@ -23,7 +23,7 @@ class FaaraoEngine {
             "SYA", "SHU", "SYO",
             "FA", "RI", "RA", 
             "A", "I", "U", "E", "O",
-            "K", "S", "T", "N", "H", "M", "Y", "R", "W", "G", "C","B","D","L",":","-","—"
+            "K", "S", "T", "N", "H", "M", "Y", "R", "W", "G", "C","B","D","L",":","-","—","?","!","/",",","¡","¿"
         ];
 
         // ウムラウト画像パス
@@ -160,7 +160,7 @@ class FaaraoEngine {
      */
     parseText(text) {
         // 大文字化。ただし Ä, Ï, Ü, Ë, Ö は判定のためにそのまま残す。アルファベットとこれらウムラウト母音以外の文字を除去
-        let cleanText = text.toUpperCase().replace(/[^A-ZÄÏÜËÖ\-:—]/g, '');
+        let cleanText = text.toUpperCase().replace(/[^A-ZÄÏÜËÖ\-:—,?! \/¡¿]/g, '');
         let parts = [];
 
         // --- フェーズ 1: テキストをパーツ配列に分解する ---
