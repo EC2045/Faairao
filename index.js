@@ -269,7 +269,7 @@ class FaaraoEngine {
                 const part = item.part;
 
                 const img = document.createElement('img');
-                img.src = `${this.baseUrl}${part}.svg`;
+                img.src = `${this.baseUrl}${part.replace("/","_").replace("?","hatena")}.svg`;
                 img.alt = part;
                 img.className = `pos-${pos}`;
 
