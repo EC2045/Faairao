@@ -1,13 +1,13 @@
 // faairao.js が公開する FaaraoEngine を使ってテスト UI を初期化する
 window.addEventListener('load', () => {
-  const inputEl   = document.getElementById('input-text');
+  const inputEl = document.getElementById('input-text');
   const renderBtn = document.getElementById('render-btn');
-  const outputEl  = document.getElementById('faairao-output');
+  const outputEl = document.getElementById('faairao-output');
   const parseDump = document.getElementById('parse-dump');
-  const domDump   = document.getElementById('dom-dump');
+  const domDump = document.getElementById('dom-dump');
   const errBanner = document.getElementById('error-banner');
-  const statusEl  = document.getElementById('engine-status');
-  const countEl   = document.getElementById('block-count');
+  const statusEl = document.getElementById('engine-status');
+  const countEl = document.getElementById('block-count');
 
   if (typeof FaaraoEngine === 'undefined') {
     statusEl.textContent = '✕ FaaraoEngine not found (faairao.js 読み込み失敗?)';
@@ -62,12 +62,12 @@ window.addEventListener('load', () => {
           const card = document.createElement('div');
           card.className = 'debug-card';
           const rows = allImgs.map(img => {
-            const name   = img.src.split('/').pop();
-            const cls    = img.className;
-            const isDia  = img.classList.contains('diaeresis');
+            const name = img.src.split('/').pop();
+            const cls = img.className;
+            const isDia = img.classList.contains('diaeresis');
             const loaded = img.complete && img.naturalWidth > 0;
             const status = loaded ? '<span class="ok">✓</span>' : '<span class="err">✗ 404?</span>';
-            const tag    = isDia ? '<span class="warn">[¨]</span>' : '<span class="ok">[img]</span>';
+            const tag = isDia ? '<span class="warn">[¨]</span>' : '<span class="ok">[img]</span>';
             return `${tag} ${status} <b>${name}</b> <span style="color:var(--muted)">.${cls.split(' ').join('.')}</span>`;
           });
           card.innerHTML = `
@@ -81,7 +81,7 @@ window.addEventListener('load', () => {
         });
       }, 300);
 
-    } catch(e) {
+    } catch (e) {
       errBanner.textContent = '⚠ ' + e.message;
       errBanner.className = 'error-banner visible';
     }
