@@ -21,9 +21,9 @@ class FaaraoEngine {
         // 「G」と「C」を辞書に追加
         this.partsDictionary = [
             "SYA", "SHU", "SYO",
-            "FA", "RI", "RA", 
+            "FA", "RI", "RA",
             "A", "I", "U", "E", "O",
-            "K", "S", "T", "N", "H", "M", "Y", "R", "W", "G", "C","B","D","L",":","-","—","?","!","/",",","¡","¿","‽"
+            "K", "S", "T", "N", "H", "M", "Y", "R", "W", "G", "C", "B", "D", "L", "P", ":", "-", "—", "?", "!", "/", ",", "¡", "¿", "‽"
         ];
 
         // ウムラウト画像パス
@@ -174,7 +174,7 @@ class FaaraoEngine {
                 // 通常のパーツ判定
                 if (cleanText.startsWith(part)) {
                     matched = true;
-                } 
+                }
                 // ウムラウト母音（Ä, Ï, Ü, Ë, Ö）の場合の判定
                 else {
                     const firstChar = cleanText[0];
@@ -244,62 +244,62 @@ class FaaraoEngine {
     /**
      * 指定されたコンテナ要素内にファラオ文字をレンダリングします。
      */
- render(text, containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = '';
+    render(text, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
 
-    // スペースで単語に分割
-    const words = text.split(' ').filter(w => w.length > 0);
+        // スペースで単語に分割
+        const words = text.split(' ').filter(w => w.length > 0);
 
-    words.forEach((word, wordIdx) => {
-        const blocks = this.parseText(word);
+        words.forEach((word, wordIdx) => {
+            const blocks = this.parseText(word);
 
-        // 単語ラッパー
-        const wordDiv = document.createElement('div');
-        wordDiv.className = 'faarao-word';
-        wordDiv.style.cssText = 'display:inline-flex; align-items:center; margin-right:24px;';
+            // 単語ラッパー
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'faarao-word';
+            wordDiv.style.cssText = 'display:inline-flex; align-items:center; margin-right:24px;';
 
-        blocks.forEach(block => {
-            const blockDiv = document.createElement('div');
-            blockDiv.className = `faarao-block size-${block.length}`;
+            blocks.forEach(block => {
+                const blockDiv = document.createElement('div');
+                blockDiv.className = `faarao-block size-${block.length}`;
 
-            block.forEach((item, idx) => {
-                const pos = ['A', 'D', 'S'][idx];
-                const part = item.part;
+                block.forEach((item, idx) => {
+                    const pos = ['A', 'D', 'S'][idx];
+                    const part = item.part;
 
-                const img = document.createElement('img');
-                img.src = `${this.baseUrl}${part.replace("/","_").replace("?","hatena")}.svg`;
-                img.alt = part;
-                img.className = `pos-${pos}`;
+                    const img = document.createElement('img');
+                    img.src = `${this.baseUrl}${part.replace("/", "_").replace("?", "hatena")}.svg`;
+                    img.alt = part;
+                    img.className = `pos-${pos}`;
 
-                if (part === "I" || part === "H") {
-                    img.classList.add(`char-${part}`);
-                }
-                const prevItem = block[idx - 1];
-                if (part === "U" && prevItem && prevItem.part === "K") {
-                    img.classList.add('near-K');
-                }
+                    if (part === "I" || part === "H") {
+                        img.classList.add(`char-${part}`);
+                    }
+                    const prevItem = block[idx - 1];
+                    if (part === "U" && prevItem && prevItem.part === "K") {
+                        img.classList.add('near-K');
+                    }
 
-                blockDiv.appendChild(img);
+                    blockDiv.appendChild(img);
 
-                if (item.diaeresis) {
-                    const dia = document.createElement('img');
-                    dia.src = this.diaeresisPath;
-                    dia.alt = '';
-                    dia.className = `pos-${pos} diaeresis`;
-                    if (part === "I" || part === "H") dia.classList.add(`char-${part}`);
-                    if (part === "U" && prevItem && prevItem.part === "K") dia.classList.add('near-K');
-                    blockDiv.appendChild(dia);
-                }
+                    if (item.diaeresis) {
+                        const dia = document.createElement('img');
+                        dia.src = this.diaeresisPath;
+                        dia.alt = '';
+                        dia.className = `pos-${pos} diaeresis`;
+                        if (part === "I" || part === "H") dia.classList.add(`char-${part}`);
+                        if (part === "U" && prevItem && prevItem.part === "K") dia.classList.add('near-K');
+                        blockDiv.appendChild(dia);
+                    }
+                });
+
+                wordDiv.appendChild(blockDiv);
             });
 
-            wordDiv.appendChild(blockDiv);
+            container.appendChild(wordDiv);
         });
-
-        container.appendChild(wordDiv);
-    });
-}
+    }
 }
 
 // =========================================================================
